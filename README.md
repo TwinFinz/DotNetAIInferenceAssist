@@ -12,7 +12,7 @@ MyAIAPI can be used for the following purposes:
 
 ## Licenses
 
-This project utilizes code from the following libraries, each of which has its own license:
+This project utilizes code from the following libraries from DotNet 7, Each of which has its own license:
 
 - [System](https://github.com/dotnet/runtime)
 - [System.Collections.Concurrent](https://github.com/dotnet/runtime)
