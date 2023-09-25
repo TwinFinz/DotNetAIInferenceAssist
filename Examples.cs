@@ -7,18 +7,17 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text;
-using System.Threading.Tasks;
-
 
     public class MyAIAPI
     {
+        #region WebRequests
         public MyAIAPI()
         {
         }
 
         #region StableDiffusion
         private static string defaultNegativePrompt = "nsfw, nude, naked, face, worst quality, normal quality, low quality, low res, blurry, text, watermark, logo, banner, extra digits, cropped, jpeg artifacts, signature, username, error, sketch, duplicate, ugly, monochrome, horror, geometry, mutation, disgusting, bad anatomy, bad hands, three hands, three legs, bad arms, missing legs, missing arms, poorly drawn face, bad face, fused face, cloned face, worst face, three crus, extra crus, fused crus, worst feet, three feet, fused feet, fused thigh, three thigh, fused thigh, extra thigh, worst thigh, missing fingers, extra fingers, ugly fingers, long fingers, horn, realistic photo, extra eyes, huge eyes, 2girl, amputation, disconnected limbs";
-        public async Task<byte[]?> GenerateImageStableDiffusionAsync(string prompt, string negativePrompt = "", string model = "deliberate_v3", string samplerName = "DPM++ 2M Karras", int steps = 20, int cfgScale = 12, int seed = 214, int width = 711, int height = 400, bool enableHr = false, double denoisingStrength = 0.6, string[]? styles = null, int batchSize = 1, int nIter = 1, bool restoreFaces = false, bool tiling = false, double sNoise = 0.4, bool overrideSettingsRestoreAfterwards = true, string endpoint = "http://127.0.0.1:7860/sdapi/v1/txt2img")
+        public static async Task<byte[]?> GenerateImageStableDiffusionAsync(string prompt, string negativePrompt = "", string model = "deliberate_v3", string samplerName = "DPM++ 2M Karras", int steps = 20, int cfgScale = 12, int seed = 214, int width = 711, int height = 400, bool enableHr = false, double denoisingStrength = 0.6, string[]? styles = null, int batchSize = 1, int nIter = 1, bool restoreFaces = false, bool tiling = false, double sNoise = 0.4, bool overrideSettingsRestoreAfterwards = true, string endpoint = "http://192.168.0.106:7860/sdapi/v1/txt2img")
         {
             prompt = prompt.Trim();
             if (!string.IsNullOrEmpty(negativePrompt.Trim()))
@@ -56,16 +55,16 @@ using System.Threading.Tasks;
             }
             string responseBody = await response.Content.ReadAsStringAsync();
             StableDiffusionResponse? jsonResponse = JsonSerializer.Deserialize<StableDiffusionResponse>(responseBody);
-            if (jsonResponse != null && !string.IsNullOrEmpty(jsonResponse.Images[0]))
+            if (jsonResponse != null && !string.IsNullOrEmpty(jsonResponse.Images![0]))
             {
                 byte[] imageBytes = Convert.FromBase64String(jsonResponse.Images[0]);
                 return imageBytes;
             }
             return null;
-        }
-        public async Task<StableDiffusionModel[]?> GetStableDiffusionModelsAsync(string endpoint = "http://127.0.0.1:7860/sdapi/v1/sd-models")
+        }        
+        public static async Task<StableDiffusionModel[]?> GetStableDiffusionModelsAsync(string endpoint = "http://192.168.0.106:7860/sdapi/v1/sd-models")
         {
-            using HttpClient client = new HttpClient();
+            using HttpClient client = new();
             client.Timeout = TimeSpan.FromSeconds(60);
             HttpResponseMessage response = await client.GetAsync(endpoint);
             if (!response.IsSuccessStatusCode)
@@ -76,10 +75,10 @@ using System.Threading.Tasks;
             StableDiffusionModel[]? models = JsonSerializer.Deserialize<StableDiffusionModel[]>(responseBody);
             return models;
         }
-        public async Task<List<string>> GetStableDiffusionModelsListAsync(string endpoint = "http://127.0.0.1:7860/sdapi/v1/sd-models")
+        public static async Task<List<string>> GetStableDiffusionModelsListAsync(string endpoint = "http://192.168.0.106:7860/sdapi/v1/sd-models")
         {
-            List<string> models = new List<string>();
-            StableDiffusionModel[]? modelsResponse = await GetStableDiffusionModelsAsync();
+            List<string> models = new();
+            StableDiffusionModel[]? modelsResponse = await GetStableDiffusionModelsAsync(endpoint);
             if (modelsResponse != null)
             {
                 Parallel.ForEach(modelsResponse, model =>
@@ -92,9 +91,9 @@ using System.Threading.Tasks;
             }
             return models;
         }
-        public async Task<ProgressResponse?> GetProgressAsync(string endpoint = "http://127.0.0.1:7860/sdapi/v1/progress")
+        public static async Task<ProgressResponse?> GetProgressAsync(string endpoint = "http://192.168.0.106:7860/sdapi/v1/progress")
         {
-            using HttpClient client = new HttpClient();
+            using HttpClient client = new();
             client.Timeout = TimeSpan.FromSeconds(15);
             HttpResponseMessage response = await client.PostAsync(endpoint, null);
             if (!response.IsSuccessStatusCode)
@@ -144,11 +143,35 @@ using System.Threading.Tasks;
             public bool OverrideSettingsRestoreAfterwards { get; set; } = true;
             [JsonPropertyName("model")]
             public string Model { get; set; } = "";
+            /* Other availableOptions            
+            [JsonPropertyName("override_settings")]
+            public object? OverrideSettings { get; set; } = null;
+            [JsonPropertyName("firstphase_width")]
+            public int FirstPhaseWidth { get; set; } = 0;
+            [JsonPropertyName("firstphase_height")]
+            public int FirstPhaseHeight { get; set; } = 0;
+            [JsonPropertyName("subseed")]
+            public int Subseed { get; set; } = -1;
+            [JsonPropertyName("subseed_strength")]
+            public double SubseedStrength { get; set; } = 0;
+            [JsonPropertyName("seed_resize_from_h")]
+            public int SeedResizeFromH { get; set; } = -1;
+            [JsonPropertyName("seed_resize_from_w")]
+            public int SeedResizeFromW { get; set; } = -1;
+            [JsonPropertyName("eta")]
+            public double Eta { get; set; } = 0;
+            [JsonPropertyName("s_churn")]
+            public double SChurn { get; set; } = 0;
+            [JsonPropertyName("s_tmax")]
+            public double STmax { get; set; } = 0;
+            [JsonPropertyName("s_tmin")]
+            public double STmin { get; set; } = 0;
+            */
         }
         public class StableDiffusionResponse
         {
             [JsonPropertyName("images")]
-            public string[] Images { get; set; } = new string[0];
+            public string[]? Images { get; set; }
         }
         public class StableDiffusionModel
         {
@@ -187,10 +210,9 @@ using System.Threading.Tasks;
         #endregion
 
         #region GptNeo
-        public async Task<string> GenerateGptNeoAsyncHttp(string prompt, int maxTokens = 2000, string serverUrl = "http://127.0.0.1:8000")
+        public static async Task<string> GenerateGptNeoAsyncHttp(string prompt, int maxTokens = 2000, string serverUrl = "http://192.168.0.106:8000")
         {
             prompt = prompt.Trim();
-            string returnString = string.Empty;
             var requestPayload = new GptNeoRequest
             {
                 Text = prompt.Trim(),
@@ -199,11 +221,11 @@ using System.Threading.Tasks;
                 MaxLength = maxTokens, // Adjust as needed
                 DoSample = true
             };
-            using HttpClient client = new HttpClient();
+            using HttpClient client = new();
             client.Timeout = TimeSpan.FromSeconds(60);
             string endpoint = serverUrl + "/call"; // Adjust the endpoint URL
             string jsonRequest = JsonSerializer.Serialize(requestPayload);
-            StringContent content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            StringContent content = new(jsonRequest, Encoding.UTF8, "application/json");
             HttpResponseMessage response = await client.PostAsync(endpoint, content);
             if (!response.IsSuccessStatusCode)
             {
@@ -248,26 +270,26 @@ using System.Threading.Tasks;
         private static readonly string imageEditsEndpoint = "https://api.openai.com/v1/images/edits";
         private static readonly string fileUploadEndpoint = "https://api.openai.com/v1/files";
 
-        public double EstimateTokenCost(string input)
+        public static double EstimateTokenCost(string input)
         {
             double tokenCount = Math.Ceiling((double)input.Length / 4);
             double costPerToken = 0.01; // Assuming a cost of 0.01 per token
             double cost = tokenCount * costPerToken;
             return cost;
         }
-        public async Task<bool> CheckTextForViolations(string prompt, string apiKey)
+        public static async Task<bool> CheckTextForViolations(string prompt, string apiKey)
         {
             bool Violates = false;
-            TextViolationCheckRequest payload = new TextViolationCheckRequest()
+            TextViolationCheckRequest payload = new()
             {
                 Input = prompt,
                 Model = "text-moderation-latest"
             };
             // create an HTTP client
-            using HttpClient client = new HttpClient();
+            using HttpClient client = new();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
             string json = JsonSerializer.Serialize(payload);
-            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+            StringContent content = new(json, Encoding.UTF8, "application/json");
             HttpResponseMessage response = await client.PostAsync(ModerationsEndpoint, content);
             if (!response.IsSuccessStatusCode)
             {
@@ -286,7 +308,7 @@ using System.Threading.Tasks;
 
             return Violates;
         }
-        public async Task<Message> GenerateChatCompletionAsync(List<Message> messages, string model = "gpt-3.5-turbo", double temperature = 1.0, double topP = 1.0, int n = 1, bool stream = false, int maxTokens = 4000, double presencePenalty = 0.0, double frequencyPenalty = 0.0, string apiKey)
+        public static async Task<Message> GenerateChatCompletionAsync(List<Message> messages, string apiKey, string model = "gpt-3.5-turbo", double temperature = 1.0, double topP = 1.0, int n = 1, int maxTokens = 4000, double presencePenalty = 0.0, double frequencyPenalty = 0.0)
         {
             try
             {
@@ -312,7 +334,7 @@ using System.Threading.Tasks;
                         curMsg++;
                     }
                 }
-                ChatCompletionRequest payload = new ChatCompletionRequest
+                ChatCompletionRequest payload = new()
                 {
                     Model = model,
                     Messages = messages,
@@ -324,12 +346,12 @@ using System.Threading.Tasks;
                     FrequencyPenalty = frequencyPenalty
                 };
 
-                using HttpClient client = new HttpClient();
+                using HttpClient client = new();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
                 string json = JsonSerializer.Serialize(payload);
-                StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+                StringContent content = new(json, Encoding.UTF8, "application/json");
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
                 HttpResponseMessage response = await client.PostAsync(chatCompletionEndpoint, content);
@@ -350,28 +372,26 @@ using System.Threading.Tasks;
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<string> GenerateImageAsyncHttp(string prompt, string size = "1024x1024", string apiKey)
+        public static async Task<string> GenerateImageAsyncHttp(string prompt, string apiKey, string size = "1024x1024")
         {
             try
             {
                 prompt = prompt.Trim();
-                if (await CheckTextForViolations(prompt))
+                if (await CheckTextForViolations(prompt, apiKey))
                 {
                     throw new Exception("This input violates OpenAI moderation checks.");
                 }
-                // set up the request body
-                ImageGenerationRequest payload = new ImageGenerationRequest
+                ImageGenerationRequest payload = new()
                 {
                     Prompt = prompt,
                     Size = size,
                     User = apiKey
                 };
 
-                // create an HTTP client
-                using HttpClient client = new HttpClient();
+                using HttpClient client = new();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 string json = JsonSerializer.Serialize(payload);
-                StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+                StringContent content = new(json, Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await client.PostAsync(imageGenerationEndpoint, content);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -386,16 +406,16 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<string> ImageVariationsAsyncHttp(byte[] image, string size = "1024x1024", string apiKey)
+        public static async Task<string> ImageVariationsAsyncHttp(byte[] image, string apiKey, string size = "1024x1024")
         {
             try
             {
-                using MultipartFormDataContent content = new MultipartFormDataContent();
-                ByteArrayContent imageContent = new ByteArrayContent(image);
+                using MultipartFormDataContent content = new();
+                ByteArrayContent imageContent = new(image);
                 imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
                 content.Add(imageContent, "image", "otter.png");
                 content.Add(new StringContent(size), "size");
-                using HttpClient client = new HttpClient();
+                using HttpClient client = new();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 HttpResponseMessage response = await client.PostAsync(imageVariationsEndpoint, content);
                 if (!response.IsSuccessStatusCode)
@@ -411,22 +431,22 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<string> EditImageAsyncHttp(string prompt, byte[] image, byte[] mask, string size = "1024x1024", string apiKey)
+        public static async Task<string> EditImageAsyncHttp(string prompt, byte[] image, byte[] mask, string apiKey, string size = "1024x1024")
         {
             try
             {
-                using (HttpClient client = new HttpClient())
+                using (HttpClient client = new())
                 {
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                    using (MultipartFormDataContent content = new MultipartFormDataContent())
+                    using (MultipartFormDataContent content = new())
                     {
-                        ByteArrayContent imageContent = new ByteArrayContent(image);
+                        ByteArrayContent imageContent = new(image);
                         imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
                         content.Add(imageContent, "image", "image.png");
 
                         if (mask != null)
                         {
-                            ByteArrayContent maskContent = new ByteArrayContent(mask);
+                            ByteArrayContent maskContent = new(mask);
                             maskContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
                             content.Add(maskContent, "mask", "mask.png");
                         }
@@ -450,16 +470,16 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<string> EditImageAsyncHttp(string prompt, byte[] image, string size = "1024x1024", string apiKey)
+        public static async Task<string> EditImageAsyncHttp(string prompt, byte[] image, string apiKey, string size = "1024x1024")
         {
             try
             {
-                using (HttpClient client = new HttpClient())
+                using (HttpClient client = new())
                 {
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                    using (MultipartFormDataContent content = new MultipartFormDataContent())
+                    using (MultipartFormDataContent content = new())
                     {
-                        ByteArrayContent imageContent = new ByteArrayContent(image);
+                        ByteArrayContent imageContent = new(image);
                         imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
                         content.Add(imageContent, "image", "image.png");
 
@@ -482,17 +502,17 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<string> TranslateAudioAsyncHttp(byte[] audio, string filename, string model = "whisper-1", string apiKey)
+        public static async Task<string> TranslateAudioAsyncHttp(byte[] audio, string filename, string apiKey, string model = "whisper-1")
         {
             try
             {
                 string audioB64 = Convert.ToBase64String(audio);
-                using (HttpClient client = new HttpClient())
+                using (HttpClient client = new())
                 {
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                    using (MultipartFormDataContent content = new MultipartFormDataContent())
+                    using (MultipartFormDataContent content = new())
                     {
-                        ByteArrayContent audioContent = new ByteArrayContent(audio);
+                        ByteArrayContent audioContent = new(audio);
                         audioContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
                         content.Add(audioContent, "file", filename);
 
@@ -515,17 +535,17 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<string> TranscribeAudioAsyncHttp(byte[] audio, string filename, string model = "whisper-1", string apiKey)
+        public static async Task<string> TranscribeAudioAsyncHttp(byte[] audio, string filename, string apiKey, string model = "whisper-1")
         {
             try
             {
                 string audioB64 = Convert.ToBase64String(audio);
-                using (HttpClient client = new HttpClient())
+                using (HttpClient client = new())
                 {
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                    using (MultipartFormDataContent content = new MultipartFormDataContent())
+                    using (MultipartFormDataContent content = new())
                     {
-                        ByteArrayContent audioContent = new ByteArrayContent(audio);
+                        ByteArrayContent audioContent = new(audio);
                         audioContent.Headers.ContentType = MediaTypeHeaderValue.Parse("audio/mpeg");
                         content.Add(audioContent, "file", filename);
 
@@ -548,12 +568,12 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<string> UploadFileToOpenAIAsync(byte[] file, string purpose, string apiKey)
+        public static async Task<string> UploadFileToOpenAIAsync(byte[] file, string purpose, string apiKey)
         {
             try
             {
                 string jsonLines = Convert.ToBase64String(file);
-                FileUploadRequest payload = new FileUploadRequest
+                FileUploadRequest payload = new()
                 {
                     Purpose = purpose,
                     File = jsonLines
@@ -568,10 +588,10 @@ using System.Threading.Tasks;
                  *  } 
                 */
                 // create an HTTP client
-                using HttpClient client = new HttpClient();
+                using HttpClient client = new();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 string json = JsonSerializer.Serialize(payload);
-                StringContent content = new StringContent(json, Encoding.UTF8);
+                StringContent content = new(json, Encoding.UTF8);
                 HttpResponseMessage response = await client.PostAsync(fileUploadEndpoint, content); // fileUploadEndpoint = "https://api.openai.com/v1/files";
                 if (!response.IsSuccessStatusCode)
                 {
@@ -586,12 +606,12 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<byte[]> RetrieveFileDetailsAsyncHttp(string fileId, string apiKey)
+        public static async Task<byte[]> RetrieveFileDetailsAsyncHttp(string fileId, string apiKey)
         {
             try
             {
                 // create an HTTP client
-                using HttpClient client = new HttpClient();
+                using HttpClient client = new();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 HttpResponseMessage response = await client.GetAsync($"{fileUploadEndpoint}/{fileId}");
                 if (!response.IsSuccessStatusCode)
@@ -606,12 +626,12 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<byte[]> RetrieveFileContentsAsyncHttp(string fileId, string apiKey)
+        public static async Task<byte[]> RetrieveFileContentsAsyncHttp(string fileId, string apiKey)
         {
             try
             {
                 // create an HTTP client
-                using HttpClient client = new HttpClient();
+                using HttpClient client = new();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 HttpResponseMessage response = await client.GetAsync($"{fileUploadEndpoint}/{fileId}/content");
                 if (!response.IsSuccessStatusCode)
@@ -626,12 +646,12 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task DeleteFileAsync(string fileUrl, string apiKey)
+        public static async Task DeleteFileAsync(string fileUrl, string apiKey)
         {
             try
             {
                 // create an HTTP client
-                using HttpClient client = new HttpClient();
+                using HttpClient client = new();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
                 string deleteEndpoint = $"{fileUrl}";
@@ -647,12 +667,12 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<Model> RetrieveModelDetailsAsync(string modelId, string apiKey)
+        public static async Task<Model> RetrieveModelDetailsAsync(string modelId, string apiKey)
         {
             try
             {
                 // create an HTTP client
-                using HttpClient client = new HttpClient();
+                using HttpClient client = new();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 HttpResponseMessage response = await client.GetAsync($"{modelEndpoint}/{modelId}");
                 if (!response.IsSuccessStatusCode)
@@ -668,13 +688,13 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<List<Model>> GetModelsAsync(string apiKey)
+        public static async Task<List<Model>> GetModelsAsync(string apiKey)
         {
             try
             {
-                List<Model> retList = new List<Model>();
+                List<Model> retList = new();
                 // create an HTTP client
-                using HttpClient client = new HttpClient();
+                using HttpClient client = new();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 HttpResponseMessage response = await client.GetAsync(modelEndpoint);
                 if (!response.IsSuccessStatusCode)
@@ -691,15 +711,15 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<List<Model>> GetBotList(string apiKey)
+        public static async Task<List<Model>> GetBotList(string apiKey)
         {
             try
             {
                 List<Model> models = await GetModelsAsync(apiKey);
-                ConcurrentBag<Model> resultList = new ConcurrentBag<Model>();
+                ConcurrentBag<Model> resultList = new();
                 if (models != null)
                 {
-                    IEnumerable<Task<Model>> tasks = models.Select(model => RetrieveModelDetailsAsync(model.Id));
+                    IEnumerable<Task<Model>> tasks = models.Select(model => RetrieveModelDetailsAsync(model.Id, apiKey));
                     Model[] details = await Task.WhenAll(tasks);
 
                     foreach (Model modelDetails in details)
@@ -719,16 +739,14 @@ using System.Threading.Tasks;
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<List<string>> GetBotNameList()
+        public static async Task<List<string>> GetBotNameList(string apiKey)
         {
-            List<string> models = new List<string>();
+            List<string> models = new();
             try
             {
-                // Get the list of available models
-                List<Model> result = await GetBotList();
+                List<Model> result = await GetBotList(apiKey);
                 if (result != null)
                 {
-                    // Start the async operations in parallel using Parallel.ForEach
                     await Task.WhenAll(result.Select(async model =>
                     {
                         if (!models.Contains(model.Id))
@@ -741,15 +759,14 @@ using System.Threading.Tasks;
             }
             catch (Exception ex)
             {
-                // Handle any exceptions that may occur while trying to retrieve the models
                 throw new Exception(ex.Message);
             }
-            return models ?? new List<string>();
+            return models ?? new();
         }
-        public async Task<string> GenerateTextAsyncHttp(string prompt, string model = "text-davinci-003", int maxTokens = 2000, string apiKey)
+        public static async Task<string> GenerateTextAsyncHttp(string prompt, string apiKey, string model = "text-davinci-003", int maxTokens = 2000)
         {
             prompt = prompt.Trim();
-            if (await CheckTextForViolations(prompt))
+            if (await CheckTextForViolations(prompt, apiKey))
             {
                 throw new Exception("This input violates OpenAI moderation checks.");
             }
@@ -773,7 +790,7 @@ using System.Threading.Tasks;
                 throw new Exception("API request too long.\nOpenAI API would fail to respond.\n Please shorten and try again.");
             }
 
-            CompletionRequest payload = new CompletionRequest
+            CompletionRequest payload = new()
             {
                 Prompt = prompt.Trim(),
                 Model = model,
@@ -785,10 +802,10 @@ using System.Threading.Tasks;
                 User = apiKey
             };
             // create an HTTP client
-            using HttpClient client = new HttpClient();
+            using HttpClient client = new();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
             string json = JsonSerializer.Serialize(payload);
-            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+            StringContent content = new(json, Encoding.UTF8, "application/json");
             HttpResponseMessage response = await client.PostAsync(completionEndpoint, content);
             if (!response.IsSuccessStatusCode)
             {
@@ -796,7 +813,7 @@ using System.Threading.Tasks;
             }
             string responseJson = await response.Content.ReadAsStringAsync();
             CompletionResult responseData = JsonSerializer.Deserialize<CompletionResult>(responseJson)!;
-            if (await CheckTextForViolations(responseData!.Choices.First().Text))
+            if (await CheckTextForViolations(responseData!.Choices.First().Text, apiKey))
             {
                 throw new Exception("This response Violates OpenAI Moderation checks.");
             }
@@ -806,13 +823,13 @@ using System.Threading.Tasks;
             returnString += $"{responseData.Choices.First().Text}\n\n";
             return returnString;
         } // Depreciated 
-        public async Task<string> EditTextAsyncHttp(string model, string instruction, string input = "", int maxTokens = 2000, string apiKey)
+        public static async Task<string> EditTextAsyncHttp(string model, string apiKey, string instruction, string input = "", int maxTokens = 2000)
         {
             try
             {
                 input = input.Trim();
                 string returnString = string.Empty;
-                if (await CheckTextForViolations(input))
+                if (await CheckTextForViolations(input, apiKey))
                 {
                     throw new Exception("This input violates OpenAI moderation checks.");
                 }
@@ -822,17 +839,16 @@ using System.Threading.Tasks;
                 {
                     throw new Exception("API request too long.\nOpenAI API would fail to respond.\n Please shorten and try again.");
                 }
-                TextEditRequest payload = new TextEditRequest
+                TextEditRequest payload = new()
                 {
                     Model = model,
                     Input = input,
                     Instruction = instruction
                 };
-                // create an HTTP client
-                using HttpClient client = new HttpClient();
+                using HttpClient client = new();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 string json = JsonSerializer.Serialize(payload);
-                StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+                StringContent content = new(json, Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await client.PostAsync(editsEndpoint, content);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -1085,7 +1101,7 @@ using System.Threading.Tasks;
         {
             [JsonPropertyName("created")]
             public long Created { get; set; }
-            [JsonPropertyName("data")]
+            [JsonPropertyName("data")] 
             public List<ImageUrl> Data { get; set; } = new();
         }
         public class ImageJsonResponse
@@ -1281,6 +1297,7 @@ using System.Threading.Tasks;
             {
             }
         }
+        #endregion
         #endregion
         #endregion
     }
