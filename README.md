@@ -1,16 +1,15 @@
-MyAIAPI
+MyAIAPI  
 
 MyAIAPI is a C# library that provides access to various AI services and models.
 
-Usage
+Usage  
 
 MyAIAPI can be used for the following purposes:
-
 StableDiffusion: Generate images using StableDiffusion models.
 GptNeo: Generate text using GptNeo models.
 OpenAIAI: Access a range of AI-related functionalities.
 
-Licenses
+Licenses  
 This project includes code from the following libraries, each of which has its own license:
 System
 System.Collections.Concurrent
