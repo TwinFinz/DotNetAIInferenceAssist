@@ -17,7 +17,7 @@ using System.Text;
 
         #region StableDiffusion
         private static string defaultNegativePrompt = "nsfw, nude, naked, face, worst quality, normal quality, low quality, low res, blurry, text, watermark, logo, banner, extra digits, cropped, jpeg artifacts, signature, username, error, sketch, duplicate, ugly, monochrome, horror, geometry, mutation, disgusting, bad anatomy, bad hands, three hands, three legs, bad arms, missing legs, missing arms, poorly drawn face, bad face, fused face, cloned face, worst face, three crus, extra crus, fused crus, worst feet, three feet, fused feet, fused thigh, three thigh, fused thigh, extra thigh, worst thigh, missing fingers, extra fingers, ugly fingers, long fingers, horn, realistic photo, extra eyes, huge eyes, 2girl, amputation, disconnected limbs";
-        public static async Task<byte[]?> GenerateImageStableDiffusionAsync(string prompt, string negativePrompt = "", string model = "deliberate_v3", string samplerName = "DPM++ 2M Karras", int steps = 20, int cfgScale = 12, int seed = 214, int width = 711, int height = 400, bool enableHr = false, double denoisingStrength = 0.6, string[]? styles = null, int batchSize = 1, int nIter = 1, bool restoreFaces = false, bool tiling = false, double sNoise = 0.4, bool overrideSettingsRestoreAfterwards = true, string endpoint = "http://192.168.0.106:7860/sdapi/v1/txt2img")
+        public static async Task<byte[]?> GenerateImageStableDiffusionAsync(string prompt, string negativePrompt = "", string model = "deliberate_v3", string samplerName = "DPM++ 2M Karras", int steps = 20, int cfgScale = 12, int seed = 214, int width = 711, int height = 400, bool enableHr = false, double denoisingStrength = 0.6, string[]? styles = null, int batchSize = 1, int nIter = 1, bool restoreFaces = false, bool tiling = false, double sNoise = 0.4, bool overrideSettingsRestoreAfterwards = true, string endpoint = "http://127.0.0.1:7860/sdapi/v1/txt2img")
         {
             prompt = prompt.Trim();
             if (!string.IsNullOrEmpty(negativePrompt.Trim()))
@@ -62,7 +62,7 @@ using System.Text;
             }
             return null;
         }        
-        public static async Task<StableDiffusionModel[]?> GetStableDiffusionModelsAsync(string endpoint = "http://192.168.0.106:7860/sdapi/v1/sd-models")
+        public static async Task<StableDiffusionModel[]?> GetStableDiffusionModelsAsync(string endpoint = "http://127.0.0.1:7860/sdapi/v1/sd-models")
         {
             using HttpClient client = new();
             client.Timeout = TimeSpan.FromSeconds(60);
@@ -75,7 +75,7 @@ using System.Text;
             StableDiffusionModel[]? models = JsonSerializer.Deserialize<StableDiffusionModel[]>(responseBody);
             return models;
         }
-        public static async Task<List<string>> GetStableDiffusionModelsListAsync(string endpoint = "http://192.168.0.106:7860/sdapi/v1/sd-models")
+        public static async Task<List<string>> GetStableDiffusionModelsListAsync(string endpoint = "http://127.0.0.1:7860/sdapi/v1/sd-models")
         {
             List<string> models = new();
             StableDiffusionModel[]? modelsResponse = await GetStableDiffusionModelsAsync(endpoint);
@@ -91,7 +91,7 @@ using System.Text;
             }
             return models;
         }
-        public static async Task<ProgressResponse?> GetProgressAsync(string endpoint = "http://192.168.0.106:7860/sdapi/v1/progress")
+        public static async Task<ProgressResponse?> GetProgressAsync(string endpoint = "http://127.0.0.1:7860/sdapi/v1/progress")
         {
             using HttpClient client = new();
             client.Timeout = TimeSpan.FromSeconds(15);
@@ -210,7 +210,7 @@ using System.Text;
         #endregion
 
         #region GptNeo
-        public static async Task<string> GenerateGptNeoAsyncHttp(string prompt, int maxTokens = 2000, string serverUrl = "http://192.168.0.106:8000")
+        public static async Task<string> GenerateGptNeoAsyncHttp(string prompt, int maxTokens = 2000, string serverUrl = "http://127.0.0.1:8000")
         {
             prompt = prompt.Trim();
             var requestPayload = new GptNeoRequest
