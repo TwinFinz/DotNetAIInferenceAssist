@@ -548,36 +548,6 @@ using System.Threading.Tasks;
                 throw new Exception($"{ex.Message}");
             }
         }
-        public async Task<byte[]> GenerateSpeechAsyncHttp(string prompt, string model = "text-davinci-003", int maxTokens = 100, string apiKey)
-        {
-            try
-            {
-                SpeechGenerationRequest payload = new SpeechGenerationRequest
-                {
-                    Prompt = prompt,
-                    Model = model,
-                    Max_Tokens = maxTokens,
-                    Format = "json"
-
-                };
-                // create an HTTP client
-                using HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                string json = JsonSerializer.Serialize(payload);
-                StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
-                HttpResponseMessage response = await client.PostAsync("https://api.openai.com/v1/engines/whisper/completions", content);
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception("API request failed with status code: " + (int)response.StatusCode);
-                }
-                byte[] responseData = await response.Content.ReadAsByteArrayAsync();
-                return responseData;
-            }
-            catch (HttpRequestException ex)
-            {
-                throw ex;
-            }
-        }
         public async Task<string> UploadFileToOpenAIAsync(byte[] file, string purpose, string apiKey)
         {
             try
